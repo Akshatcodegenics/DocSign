@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export Test Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .button:hover { background: #0056b3; }
+        .error { color: red; margin: 10px 0; }
+        .success { color: green; margin: 10px 0; }
+        .status { padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin: 10px 0; }
+        .token-display { background: #f8f9fa; padding: 10px; border-radius: 5px; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Export Test Page</h1>
+    <p>This page tests all export functionality without the React app complexity.</p>
+    
+    <div id="status" class="status">
+        <strong>Status:</strong> Ready to test
+    </div>
+    
+    <div class="token-display">
+        <strong>Auth Token:</strong> <span id="token">Not logged in</span>
+    </div>
+    
+    <h2>Authentication</h2>
+    <button class="button" onclick="login()">🔐 Login with Demo Account</button>
+    <button class="button" onclick="clearAuth()">🚪 Logout</button>
+    
+    <h2>Export Tests</h2>
+    <button class="button" onclick="testExport('pdf')">📄 Export PDF</button>
+    <button class="button" onclick="testExport('png')">🖼️ Export PNG</button>
+    <button class="button" onclick="testExport('jpeg')">📸 Export JPEG</button>
+    <button class="button" onclick="testExport('webp')">🎨 Export WebP</button>
+    <button class="button" onclick="testExport('json')">📊 Export JSON</button>
+    <button class="button" onclick="testExport('audit_csv')">📈 Audit CSV</button>
+    <button class="button" onclick="testExport('audit_json')">📋 Audit JSON</button>
+    <button class="button" onclick="testExport('blockchain_json')">⛓️ Blockchain JSON</button>
+    <button class="button" onclick="testExport('blockchain_csv')">🔗 Blockchain CSV</button>
+    
+    <h2>Batch Test</h2>
+    <button class="button" onclick="testAllExports()">🧪 Test All Exports</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:9999/api';
+        const DEMO_DOCUMENT_ID = '60f7b3b3b3b3b3b3b3b3b3b4';
+        
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.innerHTML = `<strong>Status:</strong> ${message}`;
+            status.className = `status ${type}`;
+        }
+        
+        function updateToken() {
+            const token = localStorage.getItem('token');
+            document.getElementById('token').textContent = token ? token.substring(0, 50) + '...' : 'Not logged in';
+        }
+        
+        async function login() {
+            try {
+                updateStatus('Logging in...', 'info');
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'demo@example.com',
+                        password: 'demo123'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.token);
+                    updateStatus('✅ Login successful!', 'success');
+                    updateToken();
+                } else {
+                    const error = await response.json();
+                    updateStatus(`❌ Login failed: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ Login error: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearAuth() {
+            localStorage.removeItem('token');
+            updateStatus('Logged out', 'info');
+            updateToken();
+        }
+        
+        async function testExport(format) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                updateStatus('❌ Please login first!', 'error');
+                return;
+            }
+            
+            try {
+                updateStatus(`Testing ${format} export...`, 'info');
+                
+                let url, responseType = 'blob';
+                switch (format) {
+                    case 'pdf':
+                        url = `${API_BASE}/export/${DEMO_DOCUMENT_ID}/pdf`;
+                        break;
+                    case 'png':
+                    case 'jpeg':
+                    case 'webp':
+                        url = `${API_BASE}/export/${DEMO_DOCUMENT_ID}/image/${format}`;
+                        break;
+                    case 'json':
+                        url = `${API_BASE}/export/${DEMO_DOCUMENT_ID}/json`;
+                        responseType = 'json';
+                        break;
+                    case 'audit_csv':
+                        url = `${API_BASE}/export/${DEMO_DOCUMENT_ID}/audit?format=csv`;
+                        break;
+                    case 'audit_json':
+                        url = `${API_BASE}/export/${DEMO_DOCUMENT_ID}/audit?format=json`;
+                        responseType = 'json';
+                        break;
+                    case 'blockchain_json':
+                        url = `${API_BASE}/export/${DEMO_DOCUMENT_ID}/blockchain?format=json`;
+                        responseType = 'json';
+                        break;
+                    case 'blockchain_csv':
+                        url = `${API_BASE}/export/${DEMO_DOCUMENT_ID}/blockchain?format=csv`;
+                        break;
+                }
+                
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    if (responseType === 'blob') {
+                        const blob = await response.blob();
+                        updateStatus(`✅ ${format} export successful! (${blob.size} bytes)`, 'success');
+                        
+                        // Download the file
+                        const downloadUrl = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        a.download = `test-export-${format}-${Date.now()}`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(downloadUrl);
+                    } else {
+                        const data = await response.json();
+                        updateStatus(`✅ ${format} export successful! (${Object.keys(data).length} keys)`, 'success');
+                        
+                        // Download JSON data
+                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                        const downloadUrl = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        a.download = `test-export-${format}-${Date.now()}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(downloadUrl);
+                    }
+                } else {
+                    const error = await response.json();
+                    updateStatus(`❌ ${format} export failed: ${error.error}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ ${format} export error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAllExports() {
+            const formats = ['pdf', 'png', 'jpeg', 'webp', 'json', 'audit_csv', 'audit_json', 'blockchain_json', 'blockchain_csv'];
+            let results = [];
+            
+            updateStatus('Testing all export formats...', 'info');
+            
+            for (const format of formats) {
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Small delay between tests
+                    await testExport(format);
+                    results.push(`✅ ${format}: SUCCESS`);
+                } catch (error) {
+                    results.push(`❌ ${format}: FAILED - ${error.message}`);
+                }
+            }
+            
+            document.getElementById('results').innerHTML = `
+                <h3>Test Results:</h3>
+                <ul>
+                    ${results.map(result => `<li>${result}</li>`).join('')}
+                </ul>
+            `;
+            
+            updateStatus('All tests completed!', 'success');
+        }
+        
+        // Initialize
+        updateToken();
+    </script>
+</body>
+</html>

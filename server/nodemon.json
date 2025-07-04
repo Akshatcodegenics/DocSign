@@ -1,0 +1,10 @@
+{
+  "watch": ["**/*.ts", "**/*.js"],
+  "ignore": ["node_modules", "dist"],
+  "exec": "ts-node index.ts",
+  "ext": "ts,js",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": 2000
+}
