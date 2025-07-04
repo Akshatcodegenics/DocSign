@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 const errorHandler = (err, req, res, next) => {
     console.error('Error occurred:', err);
     // Multer errors
@@ -30,7 +29,7 @@ const errorHandler = (err, req, res, next) => {
     }
     // Mongoose validation errors
     if (err.name === 'ValidationError') {
-        const messages = Object.values(err.errors).map((val) => val.message);
+        const messages = Object.values(err.errors).map(val => val.message);
         return res.status(400).json({
             success: false,
             message: messages.join(', '),
@@ -69,5 +68,5 @@ const errorHandler = (err, req, res, next) => {
         message: err.message || 'Internal server error',
     });
 };
-exports.default = errorHandler;
+module.exports = errorHandler;
 //# sourceMappingURL=errorHandler.js.map

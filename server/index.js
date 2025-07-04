@@ -28,6 +28,19 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Database connection with fallback
+let dbConnected = false;
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    database: dbConnected ? 'connected' : 'disconnected',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Routes
 app.use('/api', apiRoutes);
 app.use('/api/auth', authRoutes);
@@ -39,9 +52,6 @@ app.use('/api/export', exportRoutes);
 // Custom Error Handler (must be after routes)
 const errorHandler = require('./middleware/errorHandler');
 app.use(errorHandler);
-
-// Database connection with fallback
-let dbConnected = false;
 
 if (process.env.NODE_ENV !== 'test') {
   mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/signflow', {

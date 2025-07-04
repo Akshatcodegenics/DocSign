@@ -1,17 +1,19 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.signDocument = exports.getDocument = exports.uploadDocument = void 0;
-const Document = require('../models/Document');
-const Signature = require('../models/Signature');
-const pdf_lib_1 = require("pdf-lib");
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const crypto_1 = __importDefault(require("crypto"));
+// Import models - will be overridden in demo mode
+let Document = require('../models/Document');
+let Signature = require('../models/Signature');
+const { MockDocument, MockSignature } = require('../middleware/demoMode');
+const { PDFDocument, rgb } = require('pdf-lib');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 // POST /api/upload - Upload PDF document
 const uploadDocument = async (req, res, next) => {
+    // Use mock models in demo mode
+    if (req.isDemoMode) {
+        Document = MockDocument;
+        Signature = MockSignature;
+    }
     try {
         if (!req.file) {
             return res.status(400).json({
@@ -56,9 +58,13 @@ const uploadDocument = async (req, res, next) => {
         next(error);
     }
 };
-exports.uploadDocument = uploadDocument;
 // GET /api/documents/:id - Get document metadata and signed URL
 const getDocument = async (req, res, next) => {
+    // Use mock models in demo mode
+    if (req.isDemoMode) {
+        Document = MockDocument;
+        Signature = MockSignature;
+    }
     try {
         const document = await Document.findById(req.params.id)
             .populate('uploadedBy', 'name email');
@@ -107,9 +113,13 @@ const getDocument = async (req, res, next) => {
         next(error);
     }
 };
-exports.getDocument = getDocument;
 // POST /api/documents/:id/sign - Apply signature to document
 const signDocument = async (req, res, next) => {
+    // Use mock models in demo mode
+    if (req.isDemoMode) {
+        Document = MockDocument;
+        Signature = MockSignature;
+    }
     try {
         const { x, y, page, width, height, signerEmail, signerName, signatureText } = req.body;
         if (!x || !y || !page || !signerEmail || !signerName) {
@@ -138,7 +148,7 @@ const signDocument = async (req, res, next) => {
         // 2. Apply the signature to the PDF
         // 3. Store the signature in the database
         // 4. Return the updated file
-        const signatureToken = crypto_1.default.randomBytes(32).toString('hex');
+        const signatureToken = crypto.randomBytes(32).toString('hex');
         // Create signature record
         const signature = new Signature({
             documentId: document._id,
@@ -159,8 +169,8 @@ const signDocument = async (req, res, next) => {
         await signature.save();
         // Stub: Apply signature to PDF (simplified version)
         try {
-            const pdfBytes = fs_1.default.readFileSync(document.filePath);
-            const pdfDoc = await pdf_lib_1.PDFDocument.load(pdfBytes);
+            const pdfBytes = fs.readFileSync(document.filePath);
+            const pdfDoc = await PDFDocument.load(pdfBytes);
             const pages = pdfDoc.getPages();
             const pdfPage = pages[page - 1];
             if (pdfPage) {
@@ -170,12 +180,12 @@ const signDocument = async (req, res, next) => {
                     x: parseFloat(x),
                     y: pdfY,
                     size: 12,
-                    color: (0, pdf_lib_1.rgb)(0, 0, 0),
+                    color: rgb(0, 0, 0),
                 });
                 // Save updated PDF
                 const updatedPdfBytes = await pdfDoc.save();
                 const updatedFilePath = document.filePath.replace('.pdf', '_signed.pdf');
-                fs_1.default.writeFileSync(updatedFilePath, updatedPdfBytes);
+                fs.writeFileSync(updatedFilePath, updatedPdfBytes);
                 // Update document status
                 document.status = 'signed';
                 await document.save();
@@ -186,7 +196,7 @@ const signDocument = async (req, res, next) => {
                         documentId: document._id,
                         signatureId: signature._id,
                         updatedFilePath,
-                        signedUrl: `${req.protocol}://${req.get('host')}/uploads/${path_1.default.basename(updatedFilePath)}`,
+                        signedUrl: `${req.protocol}://${req.get('host')}/uploads/${path.basename(updatedFilePath)}`,
                         signature: {
                             x: signature.x,
                             y: signature.y,
@@ -232,5 +242,9 @@ const signDocument = async (req, res, next) => {
         next(error);
     }
 };
-exports.signDocument = signDocument;
+module.exports = {
+    uploadDocument,
+    getDocument,
+    signDocument,
+};
 //# sourceMappingURL=apiController.js.map

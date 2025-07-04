@@ -1,6 +1,4 @@
-import { Response, NextFunction } from 'express';
-declare const uploadDocument: (req: any, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
-declare const getDocument: (req: any, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
-declare const signDocument: (req: any, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
-export { uploadDocument, getDocument, signDocument };
+export function uploadDocument(req: any, res: any, next: any): Promise<any>;
+export function getDocument(req: any, res: any, next: any): Promise<any>;
+export function signDocument(req: any, res: any, next: any): Promise<any>;
 //# sourceMappingURL=apiController.d.ts.map
