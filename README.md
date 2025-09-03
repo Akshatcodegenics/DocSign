@@ -2,7 +2,7 @@ SignFlow — Your Custom E-Signature Platform ✍️
 <p align="center"> <a href="https://signflow-3mfih93by-akshatcodegenics-projects.vercel.app/"> <img src="https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=vercel" alt="Live Demo" /> </a> <a href="https://github.com/Akshatcodegenics"> <img src="https://img.shields.io/badge/Maintained-Yes-blue?style=for-the-badge&logo=github" alt="Maintained" /> </a> <a href="https://github.com/Akshatcodegenics"> <img src="https://img.shields.io/badge/Author-Akshat%20Codegenics-orange?style=for-the-badge" alt="Author" /> </a> </p>
 🌐 Live Demo
 
-🔗 SignFlow
+🔗 SignFlow-https://signflow-3mfih93by-akshatcodegenics-projects.vercel.app/
  — Try it now!
 
 📝 Overview
@@ -23,13 +23,8 @@ With real-time collaboration and secure encryption, SignFlow simplifies the enti
 ⚡ Fast & Responsive — Built with a smooth UI optimized for all devices.
 
 📑 Download & Share — Get your signed documents instantly.
+<img width="1892" height="1038" alt="Screenshot 2025-09-03 220721" src="https://github.com/user-attachments/assets/6c316e1b-8cb4-4cf4-82e9-b447dc3eaea6" />
 
-🎥 Demo Preview
-<p align="center"> <img src="https://via.placeholder.com/900x500.png?text=SignFlow+Demo+GIF" alt="SignFlow Demo" /> </p>
-
-(You can replace the above GIF with a real screen recording using Loom
- or ScreenToGif
-.)
 
 🛠️ Tech Stack
 Category	Technology
@@ -41,7 +36,7 @@ Styling	Tailwind CSS
 Deployment	Vercel
 ⚙️ Installation & Setup
 # Clone the repository
-git clone https://github.com/Akshatcodegenics/signflow.git
+git clone https://github.com/Akshatcodegenics/DocSign.git
 
 # Navigate into the project folder
 cd signflow
